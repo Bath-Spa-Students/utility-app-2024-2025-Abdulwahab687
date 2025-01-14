@@ -1,100 +1,147 @@
 import time
+import random
+from datetime import datetime
 
 products = {
-    '1': {'name': 'Water', 'price': 1.00, 'stock': 10, 'type': 'Drinks'},
-    '2': {'name': 'Coke', 'price': 2.00, 'stock': 12, 'type': 'Drinks'},
-    '3': {'name': 'Pepsi', 'price': 2.00, 'stock': 15, 'type': 'Drinks'},
-    '4': {'name': 'Coffee', 'price': 2.00, 'stock': 5, 'type': 'Hot Drinks'},
-    '5': {'name': 'Tea', 'price': 2.00, 'stock': 8, 'type': 'Hot Drinks'},
-    '6': {'name': 'Lays', 'price': 1.00, 'stock': 6, 'type': 'Snacks'},
-    '7': {'name': 'Doritos', 'price': 1.00, 'stock': 12, 'type': 'Snacks'},
-    '8': {'name': 'Snickers', 'price': 1.50, 'stock': 13, 'type': 'Chocolate'},
-    '9': {'name': 'Mars', 'price': 1.50, 'stock': 15, 'type': 'Chocolate'}
+    'A1': {'name': '🍷 Elderberry Wine', 'price': 4.50, 'stock': 8, 'category': 'Artisanal Drinks'},
+    'A2': {'name': '🫖 Jasmine Pearl Tea', 'price': 3.50, 'stock': 10, 'category': 'Artisanal Drinks'},
+    'A3': {'name': '☕ Turkish Coffee', 'price': 3.00, 'stock': 7, 'category': 'Artisanal Drinks'},
+    'B1': {'name': '🍫 Dark Truffle', 'price': 2.50, 'stock': 15, 'category': 'Confections'},
+    'B2': {'name': '🍬 Rose Turkish Delight', 'price': 3.00, 'stock': 12, 'category': 'Confections'},
+    'B3': {'name': '🍪 Lavender Shortbread', 'price': 2.50, 'stock': 9, 'category': 'Confections'},
+    'C1': {'name': '📜 Fortune Scroll', 'price': 1.00, 'stock': 20, 'category': 'Curiosities'},
+    'C2': {'name': '🎭 Mystery Box', 'price': 5.00, 'stock': 5, 'category': 'Curiosities'},
+    'C3': {'name': '✨ Wishing Coin', 'price': 2.00, 'stock': 15, 'category': 'Curiosities'}
 }
 
-good_combinations = {
-    'Coffee': ['Mars', 'Snickers'],
-    'Tea': ['Mars'],
-    'Lays': ['Coke', 'Pepsi'],
-    'Doritos': ['Coke', 'Pepsi']
+perfect_pairings = {
+    'Turkish Coffee': ['Dark Truffle', 'Rose Turkish Delight'],
+    'Jasmine Pearl Tea': ['Lavender Shortbread'],
+    'Elderberry Wine': ['Dark Truffle'],
+    'Mystery Box': ['Fortune Scroll']
 }
 
-def show_menu():
-    print("\n===== VENDING MACHINE =====")
-    for type in ['Drinks', 'Hot Drinks', 'Snacks', 'Chocolate']:
-        print(f"\n--- {type} ---")
+fortunes = [
+    "A pleasant surprise is waiting for you.",
+    "Your creativity will bring you great joy.",
+    "An old friend will bring new opportunities.",
+    "The path less traveled will reward you.",
+    "A small gift will lead to great happiness."
+]
+
+def print_vintage_border():
+    print("\n" + "★·.·´¯`·.·★" * 8)
+
+def print_aesthetic_header():
+    current_time = datetime.now().strftime("%H:%M")
+    print(f"\n═══════ ⟦ CURIOSITY DISPENSARY ⟧ ═══════")
+    print(f"       Time Stands at {current_time}")
+    print("    'Purveyor of Uncommon Delights'")
+
+def display_catalogue():
+    print_aesthetic_header()
+    for category in ['Artisanal Drinks', 'Confections', 'Curiosities']:
+        print(f"\n✧ {category} ✧")
+        print("─" * 45)
         for code, item in products.items():
-            if item['type'] == type and item['stock'] > 0:
-                print(f"{code}    | {item['name']:<9} | £{item['price']:.2f} | {item['stock']}")
+            if item['category'] == category and item['stock'] > 0:
+                print(f"{code} | {item['name']:<20} | £{item['price']:<5} | {item['stock']} left")
+    print_vintage_border()
 
-def get_money():
+def accept_payment():
     while True:
         try:
-            money = float(input("\nPlease insert money (£): "))
-            return money if money > 0 else print("Please insert some money!")
+            print("\nKindly deposit your coins and notes...")
+            payment = float(input("£ "))
+            if payment <= 0:
+                print("⚠ The machine requires proper payment to operate.")
+                continue
+            return payment
         except ValueError:
-            print("That's not a valid amount!")
+            print("⚠ The machine cannot process this form of payment.")
 
-def get_choice(money):
-    choice = input("\nEnter code number (or 'q' to quit): ")
-    if choice.lower() == 'q': return None
+def select_item(available_funds):
+    choice = input("\nPlease select your desire (or 'Q' to quit): ").upper()
+    if choice == 'Q':
+        return None
     
     if choice in products:
         item = products[choice]
         if item['stock'] <= 0:
-            print("Sorry, we are out of that!")
+            print("※ Regrettably, this item is no longer available.")
             return None
-        if money >= item['price']:
+        if available_funds >= item['price']:
             return choice
-        print(f"Sorry, you need £{item['price']:.2f}, but only gave £{money:.2f}")
+        print(f"※ This item requires £{item['price']:.2f}, but you've provided £{available_funds:.2f}")
     else:
-        print("Invalid code! Please try again.")
+        print("※ The machine does not recognize this selection.")
     return None
 
-def suggest_another_item(item_name):
-    if item_name in good_combinations:
-        print("\nGreat choice! You might also like:")
-        for suggestion in good_combinations[item_name]:
+def suggest_complementary_items(item_name):
+    if item_name in perfect_pairings:
+        print("\n✧ The machine whispers a suggestion ✧")
+        print("These items are known to pair wonderfully:")
+        for suggestion in perfect_pairings[item_name]:
             for code, product in products.items():
-                if product['name'] == suggestion and product['stock'] > 0:
-                    print(f"- {suggestion} (Code: {code}, £{product['price']:.2f})")
+                if product['name'].endswith(suggestion) and product['stock'] > 0:
+                    print(f"❥ {suggestion} ({code}: £{product['price']:.2f})")
 
-def give_item(choice, money):
+def dispense_item(choice, payment):
     item = products[choice]
-    change = money - item['price']
+    change = payment - item['price']
     products[choice]['stock'] -= 1
     
-    print("\nGetting your item ready...")
+    print("\nThe mechanisms whir to life...")
     time.sleep(1)
-    print(f"\n*** Your {item['name']} has been dispensed! ***")
+    print("．．．．．．．．．")
+    time.sleep(0.5)
+    
+    if item['name'].startswith('📜'):
+        print(f"\n✧ Your fortune scroll unfurls ✧")
+        print(f"「 {random.choice(fortunes)} 」")
+    elif item['name'].startswith('🎭'):
+        print("\n✧ The mystery box reveals ✧")
+        surprises = ["a tiny brass key", "a peculiar stone", "a pressed flower", 
+                    "a curious coin", "a small crystal"]
+        print(f"「 {random.choice(surprises)} 」")
+    else:
+        print(f"\n✧ Your {item['name']} materializes ✧")
+    
     return item['name'], change
 
-def run_vending_machine():
+def operate_machine():
     while True:
-        show_menu()
-        money = get_money()
+        display_catalogue()
+        payment = accept_payment()
         
-        while money > 0:
-            choice = get_choice(money)
+        while payment > 0:
+            choice = select_item(payment)
             if not choice:
-                print(f"\nHere's your money back: £{money:.2f}")
+                print(f"\nReturning £{payment:.2f}")
                 break
 
-            item_name, change = give_item(choice, money)
-            print(f"Change: £{change:.2f}")
-            suggest_another_item(item_name)
+            item_name, change = dispense_item(choice, payment)
+            if change > 0:
+                print(f"\nYour change: £{change:.2f}")
+            suggest_complementary_items(item_name)
             
             if change > 0:
-                if input("\nWant to buy something else with your change? (yes/no): ").lower() == 'yes':
-                    money = change
-                    show_menu()
+                if input("\nWould you like to make another selection with your change? (Y/N): ").upper() == 'Y':
+                    payment = change
+                    display_catalogue()
                 else:
                     break
+            else:
+                break
 
-        if input("\nWould you like to buy something else? (yes/no): ").lower() != 'yes':
-            print("\nThanks for using our vending machine!")
+        if input("\nWould you care to make another purchase? (Y/N): ").upper() != 'Y':
+            print("\n✧ Thank you for visiting the Curiosity Dispensary ✧")
+            print("May your selections bring you joy and wonder.")
             break
 
 if __name__ == "__main__":
-    print("Welcome to our vending machine!")
-    run_vending_machine()
+    print_vintage_border()
+    print("Welcome to the Curiosity Dispensary")
+    print("Where the Ordinary Becomes Extraordinary")
+    print_vintage_border()
+    operate_machine()
