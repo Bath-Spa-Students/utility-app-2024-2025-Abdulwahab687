@@ -1,147 +1,149 @@
+# My corner store vending machine
+# Made this for my small store - keeps track of items and handles payments
+# Note: Need to install tabulate package first!
+
+from tabulate import tabulate
 import time
-import random
-from datetime import datetime
 
-products = {
-    'A1': {'name': '🍷 Elderberry Wine', 'price': 4.50, 'stock': 8, 'category': 'Artisanal Drinks'},
-    'A2': {'name': '🫖 Jasmine Pearl Tea', 'price': 3.50, 'stock': 10, 'category': 'Artisanal Drinks'},
-    'A3': {'name': '☕ Turkish Coffee', 'price': 3.00, 'stock': 7, 'category': 'Artisanal Drinks'},
-    'B1': {'name': '🍫 Dark Truffle', 'price': 2.50, 'stock': 15, 'category': 'Confections'},
-    'B2': {'name': '🍬 Rose Turkish Delight', 'price': 3.00, 'stock': 12, 'category': 'Confections'},
-    'B3': {'name': '🍪 Lavender Shortbread', 'price': 2.50, 'stock': 9, 'category': 'Confections'},
-    'C1': {'name': '📜 Fortune Scroll', 'price': 1.00, 'stock': 20, 'category': 'Curiosities'},
-    'C2': {'name': '🎭 Mystery Box', 'price': 5.00, 'stock': 5, 'category': 'Curiosities'},
-    'C3': {'name': '✨ Wishing Coin', 'price': 2.00, 'stock': 15, 'category': 'Curiosities'}
+# All my store items - keeping it simple and organized by type
+store_items = {
+    'Snacks': {
+        'S1': {'name': 'Pringles Original', 'price': 2.50, 'left': 8},
+        'S2': {'name': 'Doritos Cool Ranch', 'price': 2.00, 'left': 10},
+        'S3': {'name': 'Snickers Bar', 'price': 1.50, 'left': 15},
+        'S4': {'name': 'M&Ms Peanut', 'price': 1.50, 'left': 12},
+        'S5': {'name': 'Oreos', 'price': 2.00, 'left': 8}
+    },
+    'Drinks': {
+        'D1': {'name': 'Coca Cola', 'price': 1.50, 'left': 20},
+        'D2': {'name': 'Sprite', 'price': 1.50, 'left': 15},
+        'D3': {'name': 'Water Bottle', 'price': 1.00, 'left': 25},
+        'D4': {'name': 'Orange Juice', 'price': 2.00, 'left': 10},
+        'D5': {'name': 'Energy Drink', 'price': 2.50, 'left': 8}
+    },
+    'Fresh Items': {
+        'F1': {'name': 'Sandwich', 'price': 3.50, 'left': 6},
+        'F2': {'name': 'Fruit Cup', 'price': 2.50, 'left': 5},
+        'F3': {'name': 'Yogurt', 'price': 1.50, 'left': 8},
+        'F4': {'name': 'Salad Box', 'price': 4.00, 'left': 4}
+    }
 }
 
-perfect_pairings = {
-    'Turkish Coffee': ['Dark Truffle', 'Rose Turkish Delight'],
-    'Jasmine Pearl Tea': ['Lavender Shortbread'],
-    'Elderberry Wine': ['Dark Truffle'],
-    'Mystery Box': ['Fortune Scroll']
+# Some items go well together - suggesting these to customers
+combo_deals = {
+    'Sandwich': ['Cola', 'Water Bottle'],
+    'Pringles': ['Sprite', 'Cola'],
+    'Salad Box': ['Water Bottle', 'Fruit Cup']
 }
 
-fortunes = [
-    "A pleasant surprise is waiting for you.",
-    "Your creativity will bring you great joy.",
-    "An old friend will bring new opportunities.",
-    "The path less traveled will reward you.",
-    "A small gift will lead to great happiness."
-]
+def show_welcome():
+    # Simple welcome message
+    print("\n=== WELCOME TO THE CORNER STORE ===")
+    print("Fresh items stocked daily!")
+    print(f"Current time: {time.strftime('%I:%M %p')}")
+    print("=" * 35)
 
-def print_vintage_border():
-    print("\n" + "★·.·´¯`·.·★" * 8)
+def display_items():
+    # Show all items nicely formatted
+    for category in store_items:
+        print(f"\n{category}:")
+        table_data = []
+        for code, item in store_items[category].items():
+            # Only show items that are in stock
+            if item['left'] > 0:
+                table_data.append([
+                    code,
+                    item['name'],
+                    f"${item['price']:.2f}",
+                    item['left']
+                ])
+        print(tabulate(table_data, headers=['Code', 'Item', 'Price', 'Left'], tablefmt='simple'))
 
-def print_aesthetic_header():
-    current_time = datetime.now().strftime("%H:%M")
-    print(f"\n═══════ ⟦ CURIOSITY DISPENSARY ⟧ ═══════")
-    print(f"       Time Stands at {current_time}")
-    print("    'Purveyor of Uncommon Delights'")
-
-def display_catalogue():
-    print_aesthetic_header()
-    for category in ['Artisanal Drinks', 'Confections', 'Curiosities']:
-        print(f"\n✧ {category} ✧")
-        print("─" * 45)
-        for code, item in products.items():
-            if item['category'] == category and item['stock'] > 0:
-                print(f"{code} | {item['name']:<20} | £{item['price']:<5} | {item['stock']} left")
-    print_vintage_border()
-
-def accept_payment():
+def get_money():
+    # Handle money input
     while True:
         try:
-            print("\nKindly deposit your coins and notes...")
-            payment = float(input("£ "))
-            if payment <= 0:
-                print("⚠ The machine requires proper payment to operate.")
-                continue
-            return payment
+            money = float(input("\nPlease insert money (or 0 to exit): $"))
+            if money >= 0:
+                return money
+            print("Please enter a valid amount!")
         except ValueError:
-            print("⚠ The machine cannot process this form of payment.")
+            print("That's not a valid amount!")
 
-def select_item(available_funds):
-    choice = input("\nPlease select your desire (or 'Q' to quit): ").upper()
-    if choice == 'Q':
-        return None
+def get_choice(money_left):
+    # Let customer choose an item
+    choice = input("\nEnter item code (or 'q' to quit): ").upper()
     
-    if choice in products:
-        item = products[choice]
-        if item['stock'] <= 0:
-            print("※ Regrettably, this item is no longer available.")
-            return None
-        if available_funds >= item['price']:
-            return choice
-        print(f"※ This item requires £{item['price']:.2f}, but you've provided £{available_funds:.2f}")
-    else:
-        print("※ The machine does not recognize this selection.")
-    return None
-
-def suggest_complementary_items(item_name):
-    if item_name in perfect_pairings:
-        print("\n✧ The machine whispers a suggestion ✧")
-        print("These items are known to pair wonderfully:")
-        for suggestion in perfect_pairings[item_name]:
-            for code, product in products.items():
-                if product['name'].endswith(suggestion) and product['stock'] > 0:
-                    print(f"❥ {suggestion} ({code}: £{product['price']:.2f})")
-
-def dispense_item(choice, payment):
-    item = products[choice]
-    change = payment - item['price']
-    products[choice]['stock'] -= 1
-    
-    print("\nThe mechanisms whir to life...")
-    time.sleep(1)
-    print("．．．．．．．．．")
-    time.sleep(0.5)
-    
-    if item['name'].startswith('📜'):
-        print(f"\n✧ Your fortune scroll unfurls ✧")
-        print(f"「 {random.choice(fortunes)} 」")
-    elif item['name'].startswith('🎭'):
-        print("\n✧ The mystery box reveals ✧")
-        surprises = ["a tiny brass key", "a peculiar stone", "a pressed flower", 
-                    "a curious coin", "a small crystal"]
-        print(f"「 {random.choice(surprises)} 」")
-    else:
-        print(f"\n✧ Your {item['name']} materializes ✧")
-    
-    return item['name'], change
-
-def operate_machine():
-    while True:
-        display_catalogue()
-        payment = accept_payment()
+    if choice.lower() == 'q':
+        return None, None
         
-        while payment > 0:
-            choice = select_item(payment)
-            if not choice:
-                print(f"\nReturning £{payment:.2f}")
-                break
-
-            item_name, change = dispense_item(choice, payment)
-            if change > 0:
-                print(f"\nYour change: £{change:.2f}")
-            suggest_complementary_items(item_name)
+    # Look through all categories to find the item
+    for category in store_items:
+        if choice in store_items[category]:
+            item = store_items[category][choice]
             
-            if change > 0:
-                if input("\nWould you like to make another selection with your change? (Y/N): ").upper() == 'Y':
-                    payment = change
-                    display_catalogue()
-                else:
-                    break
-            else:
-                break
+            # Check if we can sell this item
+            if item['left'] <= 0:
+                print("Sorry, we're out of that item!")
+                return None, None
+                
+            if money_left < item['price']:
+                print(f"You need ${item['price']:.2f}, but only have ${money_left:.2f}")
+                return None, None
+                
+            return choice, category
+    
+    print("Sorry, couldn't find that item!")
+    return None, None
 
-        if input("\nWould you care to make another purchase? (Y/N): ").upper() != 'Y':
-            print("\n✧ Thank you for visiting the Curiosity Dispensary ✧")
-            print("May your selections bring you joy and wonder.")
+def suggest_items(item_name):
+    # Suggest items that go well together
+    if item_name in combo_deals:
+        print("\nGreat choice! These go well with it:")
+        for suggested in combo_deals[item_name]:
+            # Find and show the suggested item's price
+            for category in store_items:
+                for code, item in store_items[category].items():
+                    if item['name'] == suggested and item['left'] > 0:
+                        print(f"- {suggested} (${item['price']:.2f}, Code: {code})")
+
+def run_store():
+    while True:
+        show_welcome()
+        display_items()
+        
+        money = get_money()
+        if money == 0:
+            print("\nThanks for stopping by!")
+            break
+            
+        while money > 0:
+            choice, category = get_choice(money)
+            
+            if not choice:
+                break
+                
+            # Process the sale
+            item = store_items[category][choice]
+            store_items[category][choice]['left'] -= 1
+            money -= item['price']
+            
+            print(f"\nHere's your {item['name']}!")
+            print(f"Money left: ${money:.2f}")
+            
+            suggest_items(item['name'])
+            
+            if money > 0:
+                if input("\nWant to buy something else? (y/n): ").lower() != 'y':
+                    print(f"\nHere's your change: ${money:.2f}")
+                    break
+            
+        if input("\nStart new purchase? (y/n): ").lower() != 'y':
+            print("\nThanks for shopping with us!")
             break
 
 if __name__ == "__main__":
-    print_vintage_border()
-    print("Welcome to the Curiosity Dispensary")
-    print("Where the Ordinary Becomes Extraordinary")
-    print_vintage_border()
-    operate_machine()
+    try:
+        run_store()
+    except KeyboardInterrupt:
+        print("\n\nClosing store... Thanks for visiting!")
