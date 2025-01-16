@@ -1,5 +1,5 @@
-# My corner store vending machine
-# Made this for my small store - keeps track of items and handles payments
+# Wahab's Vending Machine
+# Made this for my store - keeps track of items and handles payments
 # Note: Need to install tabulate package first!
 
 from tabulate import tabulate
@@ -38,10 +38,10 @@ combo_deals = {
 
 def show_welcome():
     # Simple welcome message
-    print("\n=== WELCOME TO THE CORNER STORE ===")
-    print("Fresh items stocked daily!")
+    print("\n=== WELCOME TO WAHAB'S VENDING MACHINE ===")
+    print("Quality items at great prices!")
     print(f"Current time: {time.strftime('%I:%M %p')}")
-    print("=" * 35)
+    print("=" * 42)
 
 def display_items():
     # Show all items nicely formatted
@@ -114,7 +114,7 @@ def run_store():
         
         money = get_money()
         if money == 0:
-            print("\nThanks for stopping by!")
+            print("\nThanks for visiting Wahab's Vending Machine!")
             break
             
         while money > 0:
@@ -139,11 +139,11 @@ def run_store():
                     break
             
         if input("\nStart new purchase? (y/n): ").lower() != 'y':
-            print("\nThanks for shopping with us!")
+            print("\nThanks for shopping at Wahab's Vending Machine!")
             break
 
 if __name__ == "__main__":
     try:
         run_store()
     except KeyboardInterrupt:
-        print("\n\nClosing store... Thanks for visiting!")
+        print("\n\(Closing Wahab's Vending Machine... Come back soon!")
